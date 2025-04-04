@@ -1,0 +1,1 @@
+use ./***.exe > image.ppm to run
