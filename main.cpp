@@ -5,18 +5,31 @@
 
 #include <iostream>
 
-color ray_color(const ray& r) {
+bool hitsphere(const ray& r, const vec3 centre, const double radius) {
+    vec3 oc = r.origin() - centre;  // Vector from sphere center to ray origin
+    vec3 d = r.direction();
+    double a = dot(d, d);
+    double b = 2.0 * dot(oc, d);
+    double c = dot(oc, oc) - radius*radius;
+    double discriminant = b*b - 4*a*c;
+    return discriminant >= 0;
+}
+
+color ray_color(const ray& r, const vec3 centre, const double radius) {
     vec3 unit_direction = unit_vector(r.direction()); //creates new vector.
     auto a = 0.5*(unit_direction.y() + 1.0); //generates a scaling factor based on the geometry. a is between 0 and 1.
-    return (1.0-a)*color(1.0, 0.6, 1.0) + a*color(0, 0.7, 1.0); //return colour based on scalin
+    bool hit = hitsphere(r, centre, radius);
+    return (hit)? color(0.2, 0.6, 0.8) : (1.0-a)*color(1.0, 0.6, 1.0) + a*color(0, 0.7, 1.0); //return colour based on scaling
 }
 
 int main() {
-
+    //sphere config
+    double radius = 0.01;
+    vec3 centre = vec3(0, 0, 0);
     // Image
 
     auto aspect_ratio = 16.0 / 9.0;
-    int image_width = 2000;
+    int image_width = 500;
 
     // Calculate the image height, and ensure that it's at least 1.
     int image_height = int(image_width / aspect_ratio);
@@ -51,8 +64,7 @@ int main() {
             auto pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
             auto ray_direction = pixel_center - camera_center; //ray starts at camera centre and points towards point on viewpoint
             ray r(camera_center, ray_direction);
-
-            color pixel_color = ray_color(r);
+            color pixel_color = ray_color(r, centre, radius);
             write_color(std::cout, pixel_color);
         }
     }
