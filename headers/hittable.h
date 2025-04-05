@@ -2,6 +2,8 @@
 #define HITTABLE_H
 
 #include "ray.h"
+#include "master.h"
+#include "interval.h"
 
 class hit_record {
     public:
@@ -23,9 +25,10 @@ class hittable {//base class for objects that can be hittablew
   public:
     virtual ~hittable() = default; //generates destructor. allows overwriting in derived classes
 
-    virtual bool hit(const ray& r, double ray_tmin, double ray_tmax, hit_record& rec) const = 0; //returns true if the object is hit, false if not
+    virtual bool hit(const ray& r, interval ray_t, hit_record& rec) const = 0; //returns true if the object is hit, false if not
     //ray_tmin makes sure no duplicate hits are counted, usually set to some small number
-    //ray_tmax maximum allowable t, allows hits behind other objects to be ignored
+    //ray_tmax maximum allowable t, allows hits behind other objects to be 
+    //now both contained in ray_t
     //=0 means its a pure virtual function and forces derived classes to implement it
 };
 
