@@ -5,31 +5,40 @@
 
 #include <iostream>
 
-bool hitsphere(const ray& r, const vec3 centre, const double radius) {
-    vec3 oc = r.origin() - centre;  // Vector from sphere center to ray origin
-    vec3 d = r.direction();
-    double a = dot(d, d);
-    double b = 2.0 * dot(oc, d);
-    double c = dot(oc, oc) - radius*radius;
-    double discriminant = b*b - 4*a*c;
-    return discriminant >= 0;
+double hitsphere(const ray& r, const point3& centre, double radius) {
+    vec3 oc = centre - r.origin();
+    auto a = r.direction().length_squared();
+    auto h = dot(r.direction(), oc);
+    auto c = oc.length_squared() - radius*radius;
+    auto discriminant = h*h - a*c;
+
+    if (discriminant < 0) {
+        return -1.0;
+    } else {
+        return (h - std::sqrt(discriminant)) / a;
+    }
 }
 
-color ray_color(const ray& r, const vec3 centre, const double radius) {
-    vec3 unit_direction = unit_vector(r.direction()); //creates new vector.
-    auto a = 0.5*(unit_direction.y() + 1.0); //generates a scaling factor based on the geometry. a is between 0 and 1.
-    bool hit = hitsphere(r, centre, radius);
-    return (hit)? color(0.2, 0.6, 0.8) : (1.0-a)*color(1.0, 0.6, 1.0) + a*color(0, 0.7, 1.0); //return colour based on scaling
+color ray_color(const ray& r, const point3& centre, const double radius) {
+    auto t = hitsphere(r, centre, radius);
+    if (t > 0.0) {
+        vec3 N = unit_vector(r.at(t) - vec3(0,0,-1));
+        return 0.5*color(N.x()+1, N.y()+1, N.z()+1);
+    }
+
+    vec3 unit_direction = unit_vector(r.direction());
+    auto a = 0.5*(unit_direction.y() + 1.0);
+    return (1.0-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);
 }
 
 int main() {
     //sphere config
-    double radius = 0.01;
-    vec3 centre = vec3(0, 0, 0);
+    double radius = 0.5;
+    vec3 centre = vec3(0, 0, -2);
     // Image
 
     auto aspect_ratio = 16.0 / 9.0;
-    int image_width = 500;
+    int image_width = 1900;
 
     // Calculate the image height, and ensure that it's at least 1.
     int image_height = int(image_width / aspect_ratio);
