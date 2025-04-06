@@ -52,6 +52,12 @@ class vec3 {
     static vec3 random(double min, double max) { //returns random vector between a min and max
         return vec3(random_double(min,max), random_double(min,max), random_double(min,max));
     }
+
+    bool near_zero() const {
+        // Return true if the vector is close to zero in all dimensions. Needed to catch issues
+        auto s = 1e-8;
+        return (std::fabs(e[0]) < s) && (std::fabs(e[1]) < s) && (std::fabs(e[2]) < s);
+    }
 };
 
 // point3 is just an alias for vec3, but useful for geometric clarity in the code.
@@ -119,6 +125,10 @@ inline vec3 random_on_hemisphere(const vec3& normal) {
         return on_unit_sphere;
     else
         return -on_unit_sphere;
+}
+
+inline vec3 reflect(const vec3& v, const vec3& n) {//perfect reflection based on the normal vector of the point of collision
+    return v - 2*dot(v,n)*n;
 }
 
 #endif

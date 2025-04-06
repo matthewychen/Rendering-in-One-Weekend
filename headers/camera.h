@@ -3,6 +3,8 @@
 #define CAMERA_H
 
 #include "hittable.h"
+#include "material.h"
+#include "colour.h"
 
 class camera {
   public: //default values
@@ -11,14 +13,14 @@ class camera {
     int samples_per_pixel = 10; //random samples per pixel on screen
     int max_depth = 10; //most bounces before abort
 
-    void render(const hittable& world) {
+    void render(const hittable& world) {//rendering block
         initialize();
         std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
         for (int j = 0; j < image_height; j++) {
             progressbar(image_height, j);
             for (int i = 0; i < image_width; i++) {
-                color pixel_color(0,0,0);//start each pixel black
+                colour pixel_color(0,0,0);//start each pixel black
                 for (int sample = 0; sample < samples_per_pixel; sample++) {
                     ray r = get_ray(i, j);
                     pixel_color += ray_color(r, max_depth, world);//accumulate ray colour of bounces
@@ -62,23 +64,28 @@ class camera {
         pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
 
-    color ray_color(const ray& r, int depth, const hittable& world) const {
+    colour ray_color(const ray& r, int depth, const hittable& world) const {
         // If we've exceeded the ray bounce limit, no more light is gathered.
         if (depth <= 0)
-            return color(0,0,0);
+            return colour(0,0,0);
         hit_record rec;
         if (world.hit(r, interval(0.001, infinity), rec)) { 
             //vec3 direction = random_on_hemisphere(rec.normal); //scatter on random direction
 
             //lambertian: new direction is the normal plus some random unit vector
-            vec3 direction = rec.normal + random_unit_vector();
+            //vec3 direction = rec.normal + random_unit_vector();
+            //return 0.65 * ray_color(ray(rec.p, direction), depth-1, world); //if hit, recurse again in different direction but with less intensity. depth decreases as more bounces occur
 
-            return 0.65 * ray_color(ray(rec.p, direction), depth-1, world); //if hit, recurse again in different direction but with less intensity. depth decreases as more bounces occur
+            ray scatteredray;
+            colour attenuation;
+            if (rec.mat->scatter(r, rec, attenuation, scatteredray))
+                return attenuation * ray_color(scatteredray, depth-1, world);
+            return colour(0,0,0);
         }
 
         vec3 unit_direction = unit_vector(r.direction());
         auto a = 0.5*(unit_direction.y() + 1.0);
-        return (1.0-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);//sky colour gradient
+        return (1.0-a)*colour(1.0, 1.0, 1.0) + a*colour(0.5, 0.7, 1.0);//sky colour gradient
     }
 
     ray get_ray(int i, int j) const {

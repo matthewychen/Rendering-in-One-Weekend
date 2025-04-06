@@ -4,6 +4,7 @@
 #include "vec3.h"
 #include "colour.h"
 
+
 class ray {
   public:
     ray() : //empty constructor

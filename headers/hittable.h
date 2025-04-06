@@ -5,12 +5,15 @@
 #include "master.h"
 #include "interval.h"
 
+class material;
+
 class hit_record {
     public:
       point3 p; //point of hit
       vec3 normal; //normal at point p
       double t; //position on ray where it hit
       bool front_face; //whether it hit from the outside or the inside
+      shared_ptr<material> mat; //pointer to the appropriate material type
   
       void set_face_normal(const ray& r, const vec3& outward_normal) {
           // Sets the hit record normal vector.
