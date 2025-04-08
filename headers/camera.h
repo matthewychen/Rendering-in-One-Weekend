@@ -5,6 +5,7 @@
 #include "hittable.h"
 #include "material.h"
 #include "colour.h"
+#include <chrono>
 
 class camera {
   public: //default values
@@ -24,6 +25,7 @@ class camera {
     double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
 
     void render(const hittable& world) {//rendering block
+        auto starttime = std::chrono::steady_clock::now();
         initialize();
         std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
@@ -39,6 +41,9 @@ class camera {
             }
         }
         progressbar(image_height, image_height);
+        auto endtime = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(endtime - starttime);
+        std::clog << "Elapsed(ms)=" << elapsed.count() << std::endl;
     }
 
   private:
